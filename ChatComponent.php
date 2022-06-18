@@ -1,5 +1,6 @@
 <?php
 
+use Ds\Set;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use Ratchet\WebSocket\MessageComponentInterface;
@@ -8,22 +9,22 @@ require_once 'vendor/autoload.php';
 
 class ChatComponent implements MessageComponentInterface
 {
-    private SplObjectStorage $connections;
+    private Set $connections;
 
     public function __construct()
     {
-        $this->connections = new SplObjectStorage();
+        $this->connections = new Set();
     }
 
     public function onOpen(ConnectionInterface $conn): void
     {
         echo "Nova conexão aceita", PHP_EOL;
-        $this->connections->attach($conn);
+        $this->connections->add($conn);
     }
 
     public function onClose(ConnectionInterface $conn): void
     {
-        $this->connections->detach($conn);
+        $this->connections->remove($conn);
     }
 
     public function onError(ConnectionInterface $conn, Exception $e): void
