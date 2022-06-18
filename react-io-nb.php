@@ -1,7 +1,8 @@
 <?php
 
+use Psr\Http\Message\ResponseInterface;
 use React\EventLoop\Loop;
-use React\Stream\DuplexResourceStream;
+use React\Http\Browser;
 use React\Stream\ReadableResourceStream;
 
 require_once 'vendor/autoload.php';
@@ -14,12 +15,14 @@ $streamList = [
     new ReadableResourceStream(fopen('arquivo2.txt', 'r'), $loop),
 ];
 
-$http = new DuplexResourceStream(stream_socket_client('tcp://localhost:8080'), $loop);
-$http->write('GET /http-server.php HTTP 1.1'.PHP_EOL.PHP_EOL);
-$http->on('data', static function (string $data){
-    $posicaoFimHttp = strpos($data, "\r\n\r\n");
-    echo substr($data, $posicaoFimHttp + 4), PHP_EOL;
-});
+$http = new Browser(null, $loop);
+$http->get('http://localhost:8080/http-server.php')
+    ->then(
+        static function (ResponseInterface $response) {
+            echo $response->getBody();
+        }
+    )
+;
 
 foreach ($streamList as $stream) {
     $stream->on('data', static function (string $data) {
